@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lexicón Inglés</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una columna de lectura; buscador arriba, entrada de diccionario y familia de palabras debajo */
+:root{
+  --bg:#f3f5f9; --surface:#ffffff; --fg:#17203a; --muted:#5d6782; --line:#dde2ee;
+  --accent:#2f4fd8; --accent-soft:#e6ebff;
+  --noun:#1f7a5a; --verb:#b4421f; --adj:#7a3fb8; --adv:#9a6a00; --other:#4a5675;
+  --f5:#1e9e55; --f4:#86c34a; --f3:#e3b21f; --f2:#e27a2b; --f1:#d63a3a; --f-off:#e3e7f0; --pic-bg:#eef1f8;
+  --font-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:"Inter", system-ui, -apple-system, sans-serif;
+  --font-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1424; --surface:#171e33; --fg:#e7ebf7; --muted:#9aa4c2; --line:#2a3350;
+  --accent:#8ea2ff; --accent-soft:#232d52;
+  --noun:#5fd0a4; --verb:#ff9a76; --adj:#c9a2ff; --adv:#f0c45a; --other:#a9b4d4;
+  --f5:#3ccf7d; --f4:#a6dc6a; --f3:#f2c94c; --f2:#f2914a; --f1:#f06262; --f-off:#2a3350; --pic-bg:#1f2842;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1424; --surface:#171e33; --fg:#e7ebf7; --muted:#9aa4c2; --line:#2a3350;
+  --accent:#8ea2ff; --accent-soft:#232d52;
+  --noun:#5fd0a4; --verb:#ff9a76; --adj:#c9a2ff; --adv:#f0c45a; --other:#a9b4d4;
+  --f5:#3ccf7d; --f4:#a6dc6a; --f3:#f2c94c; --f2:#f2914a; --f1:#f06262; --f-off:#2a3350; --pic-bg:#1f2842;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:32px 56px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+header{display:flex;flex-direction:column;gap:6px}
+.brand{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,5vw,38px);letter-spacing:-.02em;margin:0;text-wrap:balance}
+.brand span{color:var(--accent)}
+.lede{color:var(--muted);margin:0;max-width:60ch}
+form{display:flex;gap:8px;flex-wrap:wrap}
+#q{flex:1 1 240px;min-width:0;font:500 18px var(--font-body);padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg)}
+#q:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+button{font:600 15px var(--font-body);cursor:pointer;border-radius:12px;border:0}
+#go{background:var(--accent);color:var(--surface);padding:14px 22px}
+#go:disabled{opacity:.6;cursor:wait}
+button:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.recent{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+.chip{background:transparent;border:1px solid var(--line);color:var(--fg);padding:4px 10px;border-radius:999px;font:500 13px var(--font-body)}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chipwrap{position:relative;display:inline-flex;margin:6px 6px 0 0}
+.chipwrap .chip{padding-right:14px}
+.chip-x{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--line);color:var(--muted);font:600 11px/1 var(--font-body)}
+.chip-x:hover{background:var(--f1);border-color:var(--f1);color:var(--surface)}
+.chip-x:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.status{padding:14px 16px;border-radius:12px;background:var(--accent-soft);color:var(--fg)}
+.status.err{background:transparent;border:1px solid var(--verb);color:var(--fg)}
+.entry{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:22px}
+.headword{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.headword h2{font-family:var(--font-display);font-weight:700;font-size:clamp(34px,7vw,48px);letter-spacing:-.025em;margin:0;line-height:1}
+.ipa{font-family:var(--font-mono);color:var(--muted);font-size:15px}
+.say{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border-radius:50%;background:var(--accent-soft);color:var(--accent);padding:0}
+.say:hover{background:var(--accent);color:var(--surface)}
+.say svg{width:17px;height:17px}
+.say.on{background:var(--accent);color:var(--surface)}
+.say.sm{width:28px;height:28px}
+.say.sm svg{width:14px;height:14px}
+.exrow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;min-width:0}
+.say.ex-say{background:color-mix(in srgb, var(--f3) 22%, transparent);color:var(--adv)}
+.say.ex-say:hover,.say.ex-say.on{background:var(--f3);color:#17203a}
+.wcell{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wcell .ipa{font-size:13px}
+.tag{display:inline-block;font:600 11px var(--font-body);text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:6px;border:1px solid currentColor}
+.t-noun{color:var(--noun)}.t-verb{color:var(--verb)}.t-adjective{color:var(--adj)}.t-adverb{color:var(--adv)}.t-other{color:var(--other)}
+.label{font:600 11px var(--font-body);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 10px}
+.senses{display:flex;flex-direction:column;gap:18px;margin:0;padding:0;list-style:none}
+.sense{display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:start}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.hero-main{min-width:0;display:flex;flex-direction:column;gap:10px}
+.pic{flex:none;width:52px;height:52px;border-radius:14px;background:var(--pic-bg);display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.pic.big{width:84px;height:84px;border-radius:20px;font-size:50px}
+.freq{display:flex;align-items:center;gap:8px}
+.freq .bar{display:flex;gap:3px}
+.freq .seg{width:18px;height:6px;border-radius:3px;background:var(--f-off)}
+.freq .txt{font:600 11px var(--font-body);letter-spacing:.04em}
+.freq.sm{margin-bottom:6px}
+.freq.sm .seg{width:11px;height:5px}
+.freq.sm .txt{font-size:10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.syn{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;border-radius:14px;background:var(--accent-soft)}
+.syn-main{min-width:0;display:flex;flex-direction:column;gap:6px}
+.syn-word{font-family:var(--font-display);font-weight:700;font-size:28px;letter-spacing:-.02em;background:none;padding:0;color:var(--fg);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+.syn-word:hover{color:var(--accent)}
+.syn .pic{background:var(--surface)}
+.legend i{width:12px;height:6px;border-radius:3px;display:inline-block}
+@media (max-width:480px){.pic.big{width:64px;height:64px;font-size:38px}.pic{width:44px;height:44px;font-size:25px}}
+.sense .n{font-family:var(--font-mono);color:var(--muted);font-size:13px;padding-top:3px}
+.sense .body{min-width:0;display:flex;flex-direction:column;gap:6px}
+.es{font-size:18px;font-weight:600}
+.en{color:var(--muted)}
+.ex{border-left:2px solid var(--line);padding-left:12px;display:flex;flex-direction:column;gap:2px}
+.ex .s{font-style:italic}
+.ex .s b{color:var(--accent);font-style:normal}
+.ex .tr{color:var(--muted);font-size:14px}
+.root{display:flex;flex-direction:column;gap:6px}
+.root p{margin:0}
+.rootword{font-family:var(--font-mono);font-weight:500;color:var(--accent)}
+.fam{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.fam-item{min-width:0;display:flex;flex-direction:column;gap:6px;padding-block:14px;border-bottom:1px solid var(--line)}
+.fam-item:first-child{padding-top:0}
+.fam-item:last-child{border-bottom:0}
+.fam-item .freq.sm{margin-bottom:0}
+.fam-head{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap}
+.fam-es{font-size:15px;font-weight:500}
+.alt{display:block;font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.02em}
+.fam .ex .s{font-size:14px}
+.fam .ex .tr{font-size:12.5px;opacity:.85}
+.ex{min-width:0;overflow-wrap:anywhere}
+.wcell button[data-w]{background:none;padding:0;color:var(--fg);font:600 16px var(--font-body);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.wcell button[data-w]:hover{color:var(--accent)}
+.fam-item.self .wcell button[data-w]{color:var(--accent)}
+.sample-note{font-size:12px;color:var(--muted)}
+.skeleton{height:14px;border-radius:6px;background:var(--line);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.skeleton{animation:none}}
+@media (max-width:480px){.entry{padding:18px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1 class="brand">Lexicón <span>Inglés</span></h1>
+    <p class="lede">Escribe una palabra en inglés y verás su significado en español, el tipo de palabra, un ejemplo de uso y su familia de palabras (la raíz y sus derivados).</p>
+  </header>
+
+  <form id="f" autocomplete="off">
+    <input id="q" type="text" placeholder="Ej.: fool, happy, run…" aria-label="Palabra en inglés" spellcheck="false" autocapitalize="off">
+    <button id="go" type="submit">Buscar</button>
+  </form>
+  <div class="recent" id="recent" hidden></div>
+
+  <div id="status" hidden></div>
+  <article class="entry" id="entry" aria-live="polite"></article>
+</div>
+
+<script>
+const SAMPLE = {
+  word:"fool", ipa:"/fuːl/", freq:3,
+  senses:[
+    {pos:"noun", emoji:"🤡", es:"tonto, necio", en:"A person who acts unwisely or lacks good sense.", example:"Don't be a fool, take the umbrella.", example_es:"No seas tonto, llévate el paraguas."},
+    {pos:"verb", emoji:"🃏", es:"engañar, tomar el pelo", en:"To trick or deceive someone.", example:"You can't fool me with that story.", example_es:"No me puedes engañar con esa historia."}
+  ],
+  root:{word:"fool", origin:"Del francés antiguo fol (loco), y este del latín follis (fuelle, \"cabeza hueca\").", note:"Fool es la raíz; los sufijos -ish, -ishly, -ishness y -proof forman los derivados."},
+  family:[
+    {word:"fool", ipa:"/fuːl/", freq:3, pos:"noun", es:"tonto", example:"He felt like a fool after the mistake.", example_es:"Se sintió como un tonto después del error."},
+    {word:"fool", ipa:"/fuːl/", freq:3, pos:"verb", es:"engañar", example:"Don't let them fool you.", example_es:"No dejes que te engañen."},
+    {word:"fool", ipa:"/fuːl/", freq:3, main:false, pos:"verb", es:"bromear, hacer el tonto", example:"Relax, I was only fooling.", example_es:"Tranquilo, solo estaba bromeando."},
+    {word:"fool", ipa:"/fuːl/", freq:2, main:false, pos:"noun", es:"bufón (de la corte)", example:"The king laughed at the fool's jokes.", example_es:"El rey se reía de los chistes del bufón."},
+    {word:"foolish", ipa:"/ˈfuːlɪʃ/", freq:3, pos:"adjective", es:"tonto, insensato", example:"It was a foolish idea.", example_es:"Fue una idea tonta."},
+    {word:"foolishly", ipa:"/ˈfuːlɪʃli/", freq:2, pos:"adverb", es:"tontamente"},
+    {word:"foolishness", ipa:"/ˈfuːlɪʃnəs/", freq:2, pos:"noun", es:"tontería, insensatez"},
+    {word:"foolproof", ipa:"/ˈfuːlpruːf/", freq:2, pos:"adjective", es:"infalible, a prueba de errores"}
+  ]
+};
+
+const POS_ES = {noun:"sustantivo",verb:"verbo",adjective:"adjetivo",adverb:"adverbio",pronoun:"pronombre",preposition:"preposición",conjunction:"conjunción",interjection:"interjección",determiner:"determinante",phrasal_verb:"phrasal verb"};
+const posClass = p => ["noun","verb","adjective","adverb"].includes(p) ? "t-"+p : "t-other";
+const posLabel = p => String(p || "").replace(/_/g, " ");
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const FREQ = {5:"Muy usada",4:"Usada",3:"Uso moderado",2:"Poco usada",1:"Casi no se usa"};
+function freqBar(n, small){
+  n = Math.round(Number(n));
+  if(!(n>=1 && n<=5)) return "";
+  const c = `var(--f${n})`;
+  const segs = [1,2,3,4,5].map(i=>`<span class="seg"${i<=n?` style="background:${c}"`:""}></span>`).join("");
+  return `<div class="freq${small?" sm":""}" title="Uso en el día a día: ${FREQ[n]} (${n}/5)"><span class="bar" aria-hidden="true">${segs}</span><span class="txt" style="color:${c}">${FREQ[n]}</span></div>`;
+}
+function pic(emoji, big, label){
+  if(!emoji) return big ? "" : "<span></span>";
+  return `<div class="pic${big?" big":""}" role="img" aria-label="${esc(label||"")}">${esc(emoji)}</div>`;
+}
+function highlight(sentence, word){
+  const safe = esc(sentence);
+  if(!word) return safe;
+  const first = word.toLowerCase().trim().split(/\s+/)[0].replace(/[^a-z'-]/g,"");
+  const stem = first.slice(0, Math.max(3, first.length-2));
+  if(!stem) return safe;
+  return safe.replace(new RegExp("\\b("+stem.replace(/[-']/g,"\\$&")+"[a-z]*)","i"), "<b>$1</b>");
+}
+
+function render(d, isSample){
+  const e = $("entry");
+  const posSet = [...new Set((d.senses||[]).map(s=>s.pos))];
+  const fam = (d.family||[]).filter(f=>!(Number(f.freq) <= 2));
+  e.innerHTML = `
+    <div class="hero">
+      <div class="hero-main">
+        ${freqBar(d.freq)}
+        <div class="headword">
+          <h2>${esc(d.word)}</h2>
+          ${d.ipa ? `<span class="ipa">${esc(d.ipa)}</span>` : ""}
+          ${sayBtn(d.word)}
+          ${posSet.map(p=>`<span class="tag ${posClass(p)}">${esc(posLabel(p))}</span>`).join(" ")}
+        </div>
+      </div>
+      ${pic(d.senses?.[0]?.emoji, true, d.senses?.[0]?.es)}
+    </div>
+    ${isSample ? `<p class="sample-note">Ejemplo de muestra. Busca cualquier palabra para ver su ficha.</p>` : ""}
+    <section>
+      <p class="label">Significados y ejemplos</p>
+      <ol class="senses">
+        ${(d.senses||[]).map((s,i)=>`
+          <li class="sense">
+            <span class="n">${i+1}</span>
+            <div class="body">
+              <div><span class="tag ${posClass(s.pos)}">${esc(posLabel(s.pos))}</span></div>
+              <div class="es">${esc(s.es)}</div>
+              <div class="en">${esc(s.en)}</div>
+              ${s.example ? `<div class="exrow"><div class="ex"><span class="s">“${highlight(s.example, d.word)}”</span>${s.example_es?`<span class="tr">${esc(s.example_es)}</span>`:""}</div>${exBtn(s.example)}</div>` : ""}
+            </div>
+            ${pic(s.emoji, false, s.es)}
+          </li>`).join("")}
+      </ol>
+    </section>
+    ${d.root ? `<section class="root">
+      <p class="label">Raíz</p>
+      <p>Raíz: <span class="rootword">${esc(d.root.word)}</span></p>
+      ${d.root.origin ? `<p class="en">${esc(d.root.origin)}</p>`:""}
+      ${d.root.note ? `<p class="en">${esc(d.root.note)}</p>`:""}
+    </section>` : ""}
+    ${(Number(d.freq) <= 2 && d.common && d.common.word) ? `<section>
+      <p class="label">Sinónimo más usado</p>
+      <div class="syn">
+        <div class="syn-main">
+          ${freqBar(d.common.freq)}
+          <div class="headword">
+            <button type="button" class="syn-word" data-w="${esc(d.common.word)}">${esc(d.common.word)}</button>
+            ${d.common.ipa ? `<span class="ipa">${esc(d.common.ipa)}</span>` : ""}
+            ${sayBtn(d.common.word)}
+          </div>
+          <div>${esc(d.common.es)}</div>
+          <div class="en" style="font-size:13px">En el día a día se dice más “${esc(d.common.word)}” que “${esc(d.word)}”.</div>
+        </div>
+        ${pic(d.common.emoji, true, d.common.es)}
+      </div>
+    </section>` : ""}
+    ${fam.length ? `<section>
+      <p class="label">Familia de palabras</p>
+      <ul class="fam">${[...fam].sort((a,b)=>((Number(b.freq)||0)-(Number(a.freq)||0)) || ((a.main===false)-(b.main===false))).map(f=>`<li class="fam-item${f.word.toLowerCase()===d.word.toLowerCase()?" self":""}">
+        ${freqBar(f.freq, true)}
+        <div class="fam-head">
+          <div class="wcell"><button type="button" data-w="${esc(f.word)}">${esc(f.word)}</button>${f.ipa?`<span class="ipa">${esc(f.ipa)}</span>`:""}${sayBtn(f.word, true)}</div>
+          <span class="tag ${posClass(f.pos)}">${esc(posLabel(f.pos))}</span>
+        </div>
+        <div class="fam-es">${esc(f.es)}${f.main===false ? `<span class="alt">significado alternativo</span>` : ""}</div>
+        ${f.example ? `<div class="exrow"><div class="ex"><span class="s">“${highlight(f.example, f.word)}”</span>${f.example_es ? `<span class="tr">${esc(f.example_es)}</span>` : ""}</div>${exBtn(f.example)}</div>` : ""}
+      </li>`).join("")}</ul>
+      <div class="legend" style="margin-top:12px">${[5,4,3].map(n=>`<span><i style="background:var(--f${n})"></i>${FREQ[n]}</span>`).join("")}</div>
+    </section>` : ""}
+  `;
+  e.querySelectorAll(".say").forEach(b=>b.addEventListener("click",()=>say(b.dataset.say, b)));
+  e.querySelectorAll(".fam button[data-w], .syn button[data-w]").forEach(b=>b.addEventListener("click",()=>{ $("q").value=b.dataset.w; lookup(b.dataset.w); }));
+}
+
+/* pronunciación: voz de Claude si está disponible; si no, la voz del navegador */
+const SPEAKER = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>`;
+const EX_VOICE = "airy";  /* voz femenina de Claude para las frases */
+function exBtn(text){ return `<button type="button" class="say sm ex-say" data-say="${esc(text)}" aria-label="Escuchar la frase" title="Escuchar la frase">${SPEAKER}</button>`; }
+function sayBtn(word, small){ return `<button type="button" class="say${small?" sm":""}" data-say="${esc(word)}" aria-label="Pronunciar ${esc(word)}" title="Pronunciar">${SPEAKER}</button>`; }
+let ttsPromise = null, ttsNs = null, ttsOff = false;
+function getTts(){
+  if(!ttsPromise){
+    ttsPromise = window.claude?.use ? window.claude.use("tts") : Promise.resolve(null);
+    ttsPromise.then(t=>{ ttsNs = t; }).catch(()=>{});
+  }
+  return ttsPromise;
+}
+/* El móvil (sobre todo iPhone) solo deja hablar si speak() se llama en el mismo toque, sin esperas antes. */
+let voices = [];
+function loadVoices(){ try{ voices = speechSynthesis.getVoices() || []; }catch{} }
+if("speechSynthesis" in window){ loadVoices(); try{ speechSynthesis.addEventListener("voiceschanged", loadVoices); }catch{} }
+function browserSpeak(word, female){
+  return new Promise((res, rej)=>{
+    if(!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") return rej({code:"no-speech"});
+    try{
+      if(speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = "en-US"; u.rate = 0.9;
+      const en = voices.filter(v=>v.lang && v.lang.replace("_","-").toLowerCase().startsWith("en"));
+      const fem = /female|samantha|victoria|karen|moira|tessa|serena|allison|ava|susan|zira|aria|jenny|google us english/i;
+      const v = (female && en.find(v=>fem.test(v.name))) || en.find(v=>v.lang.replace("_","-").startsWith("en-US")) || en[0];
+      if(v) u.voice = v;
+      let started = false;
+      u.onstart = ()=>{ started = true; };
+      u.onend = ()=>res();
+      u.onerror = e=>{ (["interrupted","canceled"].includes(e.error)) ? res() : rej({code:e.error||"error"}); };
+      speechSynthesis.speak(u);
+      if(speechSynthesis.paused) speechSynthesis.resume();
+      setTimeout(()=>{ if(!started && !speechSynthesis.speaking) rej({code:"silent"}); }, 2500);
+    }catch(e){ rej({code:"error"}); }
+  });
+}
+function audioHelp(word){
+  const s = $("status");
+  const url = "https://dictionary.cambridge.org/pronunciation/english/" + encodeURIComponent(word.toLowerCase());
+  s.className = "status err"; s.hidden = false;
+  s.innerHTML = `Este navegador no deja reproducir el audio aquí. Revisa que el teléfono no esté en modo silencio y que el volumen esté alto. Si sigue sin sonar, abre la página en Chrome o Safari, o <a href="${esc(url)}" target="_blank" rel="noopener" style="color:var(--accent)">escucha “${esc(word)}” en Cambridge Dictionary</a>.`;
+}
+function say(word, btn){
+  document.querySelectorAll(".say.on").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  const done = ()=>btn.classList.remove("on");
+  const fail = ()=>{ done(); audioHelp(word); };
+  const t = ttsOff ? null : ttsNs;
+  if(t){
+    t.speak(word, btn.dataset.voice ? {language:"en", voice:btn.dataset.voice} : {language:"en"}).then(done).catch(err=>{
+      if(err?.code === "not_granted") ttsOff = true;
+      if(["viewer_stopped","interrupted","replaced"].includes(err?.code)) return done();
+      browserSpeak(word, !!btn.dataset.voice).then(done, fail);
+    });
+  } else {
+    browserSpeak(word, !!btn.dataset.voice).then(done, fail);  /* llamado en el mismo toque */
+  }
+}
+
+function showStatus(msg, err){
+  const s = $("status");
+  s.className = "status" + (err ? " err" : "");
+  s.textContent = msg; s.hidden = !msg;
+}
+
+function loading(word){
+  $("entry").innerHTML = `<div class="headword"><h2>${esc(word)}</h2></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="skeleton" style="width:40%"></div><div class="skeleton" style="width:85%"></div>
+      <div class="skeleton" style="width:70%"></div><div class="skeleton" style="width:55%"></div></div>`;
+}
+
+/* historial reciente (solo en este navegador) */
+function getRecent(){ try{ return JSON.parse(localStorage.getItem("lex-recent")||"[]"); }catch{ return []; } }
+function addRecent(w){ const r=[w,...getRecent().filter(x=>x!==w)].slice(0,40); try{ localStorage.setItem("lex-recent",JSON.stringify(r)); }catch{} drawRecent(); }
+function drawRecent(){
+  const r = getRecent(), box=$("recent");
+  if(!r.length){ box.hidden=true; return; }
+  box.hidden=false;
+  box.innerHTML = `<span>Recientes:</span>` + r.map(w=>`<span class="chipwrap"><button type="button" class="chip" data-w="${esc(w)}">${esc(w)}</button><button type="button" class="chip-x" data-del="${esc(w)}" aria-label="Borrar ${esc(w)} de recientes" title="Borrar">×</button></span>`).join("");
+  box.querySelectorAll(".chip-x").forEach(b=>b.addEventListener("click",()=>{
+    const r2 = getRecent().filter(x=>x!==b.dataset.del);
+    try{ localStorage.setItem("lex-recent",JSON.stringify(r2)); }catch{}
+    drawRecent();
+  }));
+  box.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{ $("q").value=b.dataset.w; lookup(b.dataset.w); }));
+  fitRecent();
+}
+/* muestra solo las palabras que caben en las dos primeras líneas */
+function fitRecent(){
+  const box = $("recent");
+  if(box.hidden) return;
+  const items = [...box.querySelectorAll(".chipwrap")];
+  items.forEach(i=>{ i.hidden = false; });
+  const lines = [];
+  let full = false;
+  for(const it of items){
+    if(full){ it.hidden = true; continue; }
+    const t = it.offsetTop;
+    if(!lines.some(l=>Math.abs(l - t) < 6)) lines.push(t);
+    if(lines.length > 2){ it.hidden = true; full = true; }
+  }
+}
+let fitTimer;
+window.addEventListener("resize", ()=>{ clearTimeout(fitTimer); fitTimer = setTimeout(fitRecent, 100); });
+document.fonts?.ready?.then(fitRecent).catch(()=>{});
+
+const cache = new Map();
+let samplePromise = null, controller = null;
+function getSample(){ if(!samplePromise) samplePromise = window.claude?.use ? window.claude.use("sample") : Promise.resolve(null); return samplePromise; }
+
+const PROMPT = w => `You are a bilingual English–Spanish dictionary for Spanish-speaking learners.
+Look up the English word: "${w}"
+
+Return ONLY a JSON object with this exact shape:
+{
+  "valid": true,
+  "word": "the word in its base/dictionary form, lowercase. If the input is a phrasal verb, idiom or multi-word expression (e.g. trip over, give up, look forward to), keep the WHOLE expression here, never reduce it to one word",
+  "ipa": "American IPA between slashes",
+  "freq": 1-5 integer, how often the word is used in everyday English (5 = very common like 'house', 4 = common, 3 = moderate, 2 = uncommon, 1 = rare/archaic),
+  "common": only when freq is 1 or 2: the most frequently used everyday English synonym, as { "word": "synonym", "ipa": "American IPA between slashes", "es": "Spanish meaning", "emoji": "ONE emoji that pictures it", "freq": 4 or 5 integer }; otherwise null,
+  "senses": [ { "pos": "noun|verb|adjective|adverb|pronoun|preposition|conjunction|interjection|determiner|phrasal_verb", "es": "Spanish translation(s), short", "en": "short English definition", "example": "short natural English example sentence using the word", "example_es": "Spanish translation of the example", "emoji": "ONE emoji that best pictures this specific meaning" } ],
+  "root": { "word": "the root/base word of the family", "origin": "one short sentence in Spanish about its etymology", "note": "one short sentence in Spanish explaining how the derived forms are built from the root (suffixes/prefixes)" },
+  "family": [ { "word": "related word from the same root", "ipa": "American IPA between slashes", "pos": "same pos values as above", "es": "Spanish meaning", "freq": "1-5 integer, same everyday-usage scale", "example": "short natural English example sentence using this exact word", "example_es": "Spanish translation of that example", "main": true if this is the word's main meaning, false if it is an alternative meaning } ]
+}
+Rules: 1-4 most common senses, ordered from most to least common; each distinct meaning gets its own emoji. freq values must be integers. Each family entry is ONE meaning of ONE word or expression. If the input is a phrasal verb or multi-word expression, the family MUST start with every main and alternative meaning of that exact expression, each as its own entry with pos "phrasal_verb" (e.g. trip over: 'tropezar con' main, 'trabarse al hablar' (trip over one's words) alternative, 'desvivirse por' (trip over oneself) alternative), then the base word and its derivatives. The family must include every main and alternative meaning of the searched word, each as its own entry (e.g. fool noun 'tonto' main, fool verb 'engañar' main, fool verb 'bromear' alternative, fool noun 'bufón' alternative), plus its common derivatives (e.g. foolish, foolishly, foolishness) with their main meaning and any common alternative meanings. Give each entry its own freq for how common THAT meaning is. Up to 14 entries, only real English words. If the input is a misspelling, correct it in "word". If it is not an English word, return {"valid": false, "suggestion": "closest English word or empty string"}.`;
+
+async function lookup(raw){
+  const w = raw.trim().toLowerCase();
+  if(!w) return;
+  if(cache.has(w)){ showStatus(""); render(cache.get(w)); addRecent(w); return; }
+  const sample = await getSample();
+  if(!sample){ showStatus("La búsqueda no está disponible en esta vista. Abre la página en claude.ai con tu sesión iniciada para consultar palabras.", true); return; }
+  controller?.abort(); controller = new AbortController();
+  $("go").disabled = true; showStatus(""); loading(w);
+  try{
+    const d = await sample.json(PROMPT(w), {signal: controller.signal, modelTier:"quick"});
+    if(!d || d.valid === false){
+      showStatus(`“${w}” no parece una palabra en inglés.` + (d?.suggestion ? ` ¿Quisiste decir “${d.suggestion}”?` : ""), true);
+      render(SAMPLE, true); return;
+    }
+    cache.set(w, d); render(d); addRecent(d.word || w);
+  }catch(err){
+    if(err?.name === "AbortError") return;
+    const msg = err?.code === "not_granted" ? "Necesitas permitir que la página consulte a Claude para buscar palabras."
+      : err?.code === "rate_limited" ? "Demasiadas búsquedas seguidas. Espera un momento y vuelve a intentarlo."
+      : "No se pudo completar la búsqueda. Inténtalo de nuevo.";
+    showStatus(msg, true); render(SAMPLE, true);
+  }finally{ $("go").disabled = false; }
+}
+
+$("f").addEventListener("submit", e=>{ e.preventDefault(); lookup($("q").value); });
+render(SAMPLE, true);
+drawRecent();
+setTimeout(getTts, 0);
+</script>
+</body>
+</html>
